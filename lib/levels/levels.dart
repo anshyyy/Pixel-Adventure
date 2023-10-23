@@ -4,19 +4,20 @@ import 'package:flame_tiled/flame_tiled.dart';
 import 'package:pixel_adventure/actors/player.dart';
 
 class Level extends World {
+  final String levelName;
+  final Player player;
+  Level({required this.levelName, required this.player});
   late TiledComponent level;
 
   @override
   FutureOr<void> onLoad() async {
-    level = await TiledComponent.load('level-02.tmx', Vector2.all(16));
+    level = await TiledComponent.load('$levelName.tmx', Vector2.all(16));
 
     final spawnPointsLayer = level.tileMap.getLayer<ObjectGroup>('Spawnpoints');
     for (final spawnPoint in spawnPointsLayer!.objects) {
       switch (spawnPoint.class_) {
         case 'Player':
-          final player = Player(
-              playerName: "Virtual Guy",
-              position: Vector2(spawnPoint.x, spawnPoint.y));
+          player.position = Vector2(spawnPoint.x, spawnPoint.y);
           add(player);
           break;
         default:
