@@ -1,25 +1,26 @@
 import 'dart:async';
-import 'dart:ui';
-
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flutter/painting.dart';
-import 'package:pixel_adventure/actors/player.dart';
-import 'package:pixel_adventure/levels/levels.dart';
+import 'package:pixel_adventure/components/actors/player.dart';
+import 'package:pixel_adventure/components/levels/levels.dart';
 
 class PixelAdventure extends FlameGame
     with HasKeyboardHandlerComponents, DragCallbacks {
   late final CameraComponent cam;
+
+  @override
   Color backgroundColor() => const Color(0xFF211F30);
+
   Player player = Player(playerName: "Virtual Guy");
   late JoystickComponent joystick;
-  bool showJoystick = true;
+  bool showJoystick = false;
 
   @override
   FutureOr<void> onLoad() async {
-    final world = Level(levelName: 'level-02', player: player);
+    final world = Level(levelName: 'level-01', player: player);
     await images.loadAllImages(); // this can cause issue,image loaded in cache
     cam = CameraComponent.withFixedResolution(
         world: world, width: 640, height: 360);
@@ -57,15 +58,17 @@ class PixelAdventure extends FlameGame
       case JoystickDirection.upLeft:
       case JoystickDirection.downLeft:
       case JoystickDirection.left:
-        player.playerDirection = PlayerDirection.left;
+        player.horizontalMovement = -1;
         break;
       case JoystickDirection.right:
       case JoystickDirection.upRight:
       case JoystickDirection.downRight:
-        player.playerDirection = PlayerDirection.right;
+        player.horizontalMovement = 1;
         break;
       default:
-        player.playerDirection = PlayerDirection.none;
+        player.horizontalMovement = 0;
+        break;
+      // player.playerDirection = PlayerDirection.none;
     }
   }
 }
