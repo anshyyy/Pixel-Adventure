@@ -4,7 +4,8 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/services.dart';
 import 'package:pixel_adventure/components/collision_block.dart';
-import 'package:pixel_adventure/components/player_hitbox.dart';
+import 'package:pixel_adventure/components/custom_hitbox.dart';
+import 'package:pixel_adventure/components/fruit.dart';
 import 'package:pixel_adventure/components/utils.dart';
 import 'package:pixel_adventure/pixel_adventure.dart';
 
@@ -19,7 +20,7 @@ enum PlayerState {
 }
 
 class Player extends SpriteAnimationGroupComponent
-    with HasGameRef<PixelAdventure>, KeyboardHandler {
+    with HasGameRef<PixelAdventure>, KeyboardHandler, CollisionCallbacks {
   final String playerName;
   Player({this.playerName = "Ninja Frog", position})
       : super(position: position);
@@ -34,14 +35,14 @@ class Player extends SpriteAnimationGroupComponent
   double horizontalMovement = 0;
   double moveSpeed = 100;
   final double _gravity = 9.8;
-  final double _jumpForce = 460;
+  final double _jumpForce = 300;
   bool isOnGround = false;
   bool hasJumped = false;
   final double _terminalVelocity = 300;
   Vector2 velocity = Vector2.zero();
   List<CollisionBlock> collisionBlocks = [];
-  PlayerHitbox hitbox =
-      PlayerHitbox(offsetX: 10, offsetY: 4, width: 14, height: 28);
+  CustomHitbox hitbox =
+      CustomHitbox(offsetX: 10, offsetY: 4, width: 14, height: 28);
 
   @override
   FutureOr<void> onLoad() {
@@ -76,6 +77,12 @@ class Player extends SpriteAnimationGroupComponent
     horizontalMovement += isRightKeyPressed ? 1 : 0;
 
     return super.onKeyEvent(event, keysPressed);
+  }
+
+  @override
+  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
+    if (other is Fruit) other.collidedWithPlayer();
+    super.onCollision(intersectionPoints, other);
   }
 
   void _loadAllAnimation() {
@@ -134,7 +141,7 @@ class Player extends SpriteAnimationGroupComponent
     }
 
     //check falling
-    if (velocity.y > _gravity) playerState = PlayerState.falling;
+    if (velocity.y > 0) playerState = PlayerState.falling;
 
     //check jumping
     if (velocity.y < 0) playerState = PlayerState.jumping;
@@ -189,7 +196,6 @@ class Player extends SpriteAnimationGroupComponent
           if (velocity.y < 0) {
             velocity.y = 0;
             position.y = block.y + block.height - hitbox.offsetY;
-            break;
           }
         }
       }
